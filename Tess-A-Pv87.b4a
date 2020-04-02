@@ -1,0 +1,2134 @@
+﻿Build1=Default,b4a.tessp
+File1=layautandro2.bal
+File2=layout1.bal
+File3=LayoutAndro2BLE.bal
+FileGroup1=Default Group
+FileGroup2=Default Group
+FileGroup3=Default Group
+Group=Default Group
+IconFile=
+Library1=core
+Library10=xui
+Library11=audio
+Library12=phone
+Library2=json
+Library3=network
+Library4=randomaccessfile
+Library5=jmqtt
+Library6=gps
+Library7=ble2
+Library8=runtimepermissions
+Library9=stringutils
+ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: http://www.basic4ppc.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="5" android:targetSdkVersion="28"/>~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>)~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")~\n~'End of default text.~\n~AddPermission(android.permission.ACCESS_COARSE_LOCATION)~\n~AddPermission(android.permission.FOREGROUND_SERVICE)~\n~AddManifestText(<uses-permission~\n~android:name="android.permission.WRITE_EXTERNAL_STORAGE"~\n~android:maxSdkVersion="28" />~\n~)
+Module1=Starter
+NumberOfFiles=3
+NumberOfLibraries=12
+NumberOfModules=1
+Version=9.5
+@EndOfDesignText@
+'
+'30-4-2018  guarda a fichero con nombre + mac, pero se pierden UDP con TESS-P y ema1
+'07/06/2018 se añade servicio y BLE
+'20-8-2018 se guardan lecturas eligiendo con toglebuton cada 1sg o 10sg. Por defecto 1sg
+'---Ver .3 ---------------------------------
+'20-8-2018 funcionamiento en segundo plano, paso funciones al servicio.
+'28-8-2018 añado segundo layaut. Uno para BT y otro para UDP
+'---Ver .4 ---------------------------------
+'27-09-2018 Añado fecha y apellido en nombre del fichero.
+'--------------------------------------------
+'---Ver .5 ---------------------------------
+'05-10-2018 Añado presentación grafica de las medidas con extracción de fichero csv de 48 puntos
+'			Añadido aviso acustico a los 480 sg util para escaneo
+'10-10-2018 Dejo solo el layaoutandroBLE
+'			Quito el web browser 
+'--------------------------------------------
+'---Ver 0.51 ---------------------------------
+'28-11-2018 cambio de directorio de escritura con GetSafeDirDefaultExternal
+'---Ver 0.53 ---------------------------------
+'4-12-2018 funciona todo en Andr. 5.1 y en emulador en Andr. 7.0
+'20-12-2018 añado grabación automatica de mensajes BT TAR, traen "M" en vez de "m" para magnitud
+'21-12-2018 añado mensaje BT TAR: "S" para iniciar TAR y "T" para STOP
+'02-01-2019 añado hora en nombre fichero, reset contador SD, desactiva CB guardar para auto scan
+'02-01-2019 beep al gurardar cada track
+'02-01-2019 texto verde si full scan de 145 puntos ok
+'03-01-2019 añadido contador en mensaje BT 
+'------------------------------------------------------------
+'08-01-2019 Ver 0.60
+'refresco textos 0.5sg
+'Lee Alt y azimut por UDP para TESS-W como AP con acelerometro
+'Alarma simple por cambios de MV y Temp IR fijos. +-0.2 magnitudes y +-2ºC
+'Alarma si en Rec se pierde la comunicación > 15sg
+'Beep por cada record
+
+'25-01-2019 Version 0.61 cambio astrix por mosquitto sin pass
+'27-01-2019 En UDP se buscaba seq en vez de udp y se perdia alt az
+'05-02-2019 por UDP no salia alt azimut, por lo mismo
+'06-02-2019 v0.63 considera el contador deenvio tambien para abrirfile en 48 medidas
+'06-02-2019 v0.64 añade al gráfico textos N S E W y temperaturas
+'07-02-2019 v0.65 mira si la escala corresponde a una tablet o al movil para ajustar tamaño grafico
+'08-02-2019 recolocacion textos en grafico
+'12-02-2019 v0.66 opcion grafico a color con paleta nixnox
+'20-02-2019 v0.67 Vbateria en msg BT para el caso de TAS. Se añade despues del contador de msg BT 
+'26-02-2019 v0.68 arreglo de lecturas en el norte
+
+'10-04-2019  v0.69 intento que la grabación fucnione con wifi, ya que se para y no se la razon
+'20-04-2019  v0.70 para que funcione grabación con wifi el telefono no se apaga mientras este marcado Save.
+'	TSP_rawrec.txt ampliado, ahora guarda todo tipo de mensaje por BT y tambien UDP,
+'   por tanto es posible: 
+'		principal en BT, mas uno wifi
+'		principal en wifi y varios BT
+'		varios wifi con un router y varios BT
+'06-05-2019 v0.71
+' Lat Lon visibles, que se perdieron en pruebas
+' Añadido a Manifest para permisos en Android < 4.4 :
+'	AddPermission(android.permission.ACCESS_COARSE_LOCATION)
+'	AddManifestText(<uses-permission
+'	android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+'	android:maxSdkVersion="18" />
+'	)
+' Con esto ya es visible el fichero en Android 4.1.2 sin tarjeta en el directorio normal. Antes salia en data/data
+
+'01-08.2019 v0.73  Añadidas alarmas acusticas cada 4 sg:
+'    Magnitud = 24, por si se ha guardado sin apagar. 600ms 2000Hz
+'    Bateria < 3.7  200 msg 1500Hz
+'Admite ficheros empezando por TAS, ademas de TSP
+'Ordena alfabeticamente la lista de ficheros 
+'Tiempo de salvar hasta 60sg
+
+
+'----------------Compilador nuevo v9.50------------------
+'Funciona en Android 9
+'-------------------------------------------------------
+'12-12-2019 - version 0.8-------------------------------
+'BT con conexión
+'seq de 0 a 145 en scan, 155 para indicar espera TSL, >200 para lecturas sueltas
+'----------------------------------------------------------
+'27-12-2019 -version 0.81 -------------------------------
+' if scaner>150 pasa a >200
+'  En GuardaTrack se guardaba la media en vez del valor ultimo.  
+'03-01-2020
+' Label visible en la conexion informando
+' Al acabar scan se pinta el mapa
+'-------------------------------------------------------
+'27-12-2019 -version 0.82 -------------------------------
+'07-01-2020
+'pequeños cambios en el log
+'-------------------------------------------------------
+'12-01-2020 -version 0.83 -------------------------------
+'corregido bug: NameSensor no= Name
+'de False a True en manager.Connect2(Id, True)
+'no intenta conectar BT si NameSensor = starsxxx
+'-------------------------------------------------------
+'13-01-2020 -version 0.84 -------------------------------
+'Añadido boton para cerrar app
+'-------------------------------------------------------
+'13-01-2020 -version 0.85 -------------------------------
+'si espera mensaje > 8  reinicia BT 
+'al cambiar nombre sensor a otro, se cierra conexión con el primero
+'-------------------------------------------------------
+'22-01-2020 -version 0.86 --------------------------------
+'El check de salvar se mantiene visible despues de un Activity Resume
+'El edit lugar y la cuenta Rec tambien se mantienen 
+'28-01-20 
+'En lecturas sueltas no se guardaba frecuencia, ya si.
+'esperando TSL se considera n sequ = 155
+
+'20-02-2020 -version 0.87 --------------------------------
+'Admite Alt y Azi de LSM instalado en TAS. Estos datos llegan como ala y azm en cadena json
+'Los datos del LSM se presentan mientras no haya scan, utiles para alinear en la oscuridad
+
+#Region  Project Attributes 	
+	#ApplicationLabel: TESS-TAS
+	#VersionCode: 35
+	#VersionName: v0.87
+	'SupportedOrientations possible values: unspecified, landscape or portrait.
+	#SupportedOrientations: portrait
+'	#SupportedOrientations: unspecified
+'	#CanInstallToExternalStorage: False  comentado en v0.69
+	#CanInstallToExternalStorage: True
+	#IncludeTitle: False	
+	#BridgeLogger: True
+#End Region
+
+#Region  Activity Attributes 
+	#FullScreen: False
+	#IncludeTitle: False
+#End Region
+
+Sub Process_Globals
+	'These global variables will be declared once when the application starts.
+	'These variables can be accessed from all modules.
+
+	Dim Tim1s As Timer
+	Dim TimBoton As Timer
+	
+'	Private mqtt As MqttClient
+'	mqtt.Initialize("mqtt", "192.168.1.33:1883", "B4X001")
+
+'	Dim mqtt_server_local As String = "192.168.1.33"
+
+'	Dim mqtt_server_local As String = "astrix.fis.ucm.es" 'original
+'	Dim mqtt_user_local As String = "tess"          	'original
+'	Dim mqtt_password_local As String = "k0L1vr1Sl0w" 'original enviar
+	Dim mqtt_server_local As String = "test.mosquitto.org"
+	Dim mqtt_user_local As String = ""
+	Dim mqtt_password_local As String = ""
+
+
+
+	
+'	Dim mqtt_user_local As String = "publisher"
+
+	Dim my_topic As String = "STARS4ALL/pruebaj/reading"
+	Dim myconmq As MqttConnectOptions
+	Private mqtt As MqttClient   
+	Dim mqconectado As Boolean	
+	'Dim version As String =  Application.VersionName
+	Private  difacimut As Int
+	Private LatLongSl As String
+	Private Lati, Longi, HoraSl, Hora As String	
+	Dim xui As XUI 'ignore
+	Private Brillomax, Brillomin As Float
+	Private MVmin, MVmax As Float
+	Private TempIRmin, TempAmb As Float
+	Dim rango As Float = 1.9
+	Private mag2(4, 12) As Float
+	Private ancho As Int = 30
+	Private alto As Int = 20	
+	Dim Can As B4XCanvas	
+	Private fentrada As String
+	Private grafica As B4XCanvas
+	Private MagCenit As Float
+	Private FichSel As String
+	
+	Dim rpcfg As RuntimePermissions
+	Dim tsp_cfg As RandomAccessFile
+	Dim scaner As Boolean = False
+	Dim altertxt As Int
+	Private MagAS(146) As Float
+	Private AS145 As Boolean
+	Private mR(32) As Int
+	Private mG(32) As Int
+	Private mB(32) As Int
+	Private colorgrafo As String
+	Dim udpsocket1 As UDPSocket
+'	Dim ble As BleManager2
+'	Dim GPS1 As GPS
+'	Dim pws As PhoneWakeState
+	Private numrowreal As Int
+	
+	Public AvisoSensorFound As Boolean
+	
+	
+	
+End Sub
+
+Sub Globals
+	
+	Dim Label1 As Label
+	Dim Ltsensor As Label
+	Dim Label3 As Label
+'	Dim Label7 As Label
+	Dim Label6 As Label
+	
+'	Dim WebView1 As WebView
+'	Dim Button1 As Button
+'	Dim dir As String
+'	Dim urlprincipal As Boolean
+	
+	Dim Label11 As Label	
+	
+'	Dim Label4 As Label
+	Dim CBsave As CheckBox
+
+	Dim Label5 As Label
+	Dim EditText1 As EditText
+
+	Dim Label9 As Label
+
+	Private Bmqtt As Button
+	Private Lorientacion As Label
+	Private Lcuenta As Label
+	
+'	Dim LayautActual As Int
+	
+	
+	Private TBtiempo As ToggleButton
+	Private Elugar As EditText
+
+	Private Bgraph As Button
+	Private PanelMain As Panel
+	
+'	Private Bsavegraph As Button
+	Private ListView1 As ListView
+	Private Lversion As Label
+	Private Lnelm As Label
+	Private Ltsensor As Label
+	Private LtempIR As Label	
+	
+	Private BAlarmaIR As Button
+	Private BAlarmaMV As Button
+	Private CBcolor As CheckBox
+	Private Lvbat As Label
+	Private CBtir As CheckBox
+	Private Bscan As Button
+	Private btnDisconnect As Button
+	Private btnReadData As Button
+	Private BstartTas As Button
+	Private Linform As Label
+	Private Button1 As Button
+End Sub
+
+
+
+
+Sub Activity_Create(FirstTime As Boolean)
+
+	Activity.LoadLayout("LayoutAndro2BLE")
+	Activity.Title = "TESS P"	
+	Activity.TitleColor = Colors.Black
+'  Label11.TextColor = Colors.Blue
+	Label11.Text = "TESS P"
+	Lversion.Text = Application.VersionName 
+	If FirstTime Then
+		Starter.CuentaSend = 0
+		mqtt.Initialize("mqtt",  "tcp://"& mqtt_server_local &":1883",  "B4X001")
+		Tim1s.Initialize("Tim1s",500)	
+		TimBoton.Initialize("TimBoton",500)
+		Label5.Text =  " Log."
+		Bmqtt.Visible = False
+		
+		Linform.Visible = True
+'ble		rpcfg.CheckAndRequest(rpcfg.PERMISSION_ACCESS_COARSE_LOCATION)
+'		Wait For Activity_PermissionResult (Permission As String, Result As Boolean)
+'		If Result Then
+'			Starter.ble_permiso_ok = True
+'		Else
+''			Log("ble not found" )
+'		End If			
+'		
+'		rpcfg.CheckAndRequest(rpcfg.PERMISSION_ACCESS_FINE_LOCATION)
+'		Wait For Activity_PermissionResult (Permission As String, Result As Boolean)
+'		If Result Then
+'
+'			CallSub(Starter, "StartScanning")
+'			Starter.gps_permiso_ok = True
+'		Else
+'			Label5.TextColor = Colors.Red
+'			Label5.Text = "Can not Scann BT"
+'		End If
+		rpcfg.CheckAndRequest(rpcfg.PERMISSION_ACCESS_FINE_LOCATION)
+		Wait For Activity_PermissionResult (Permission As String, Result As Boolean)
+		If Result Then
+			Starter.gps_permiso_ok = True
+		Else
+			'	Label5.TextColor = Colors.Red
+			'	Label5.Text = "Can not Scann BT"
+		End If				
+		
+		Starter.TiempoSalvarSg = 10
+	End If	
+	
+	Activity.Color = Colors.Black
+	Elugar.TextColor =Colors.RGB(0x7F,0x9D,0xF9)
+	Bmqtt.Color = Colors.RGB(0x1F,0x1F,0x1F)'Colors.DarkGray
+	Bgraph.Color = Colors.DarkGray
+	BAlarmaIR.Color = Colors.DarkGray
+	BAlarmaMV.Color = Colors.DarkGray
+	Button1.Color = Colors.Black
+'	ListView1.Color = Colors.DarkGray
+'	Label1.Text = "-"
+	Label3.Text = "-"
+	LtempIR.Text = "-"
+	Ltsensor.Text = "-"	
+
+'	Log (rpcfg.GetSafeDirDefaultExternal("") )
+	'File.WriteString(rp.GetSafeDirDefaultExternal(""), "tsp_cfg.txt", "hola")
+	
+	If File.Exists(rpcfg.GetSafeDirDefaultExternal(""), "tsp_cfg.txt") = False Then  'NO existe
+	'	Log("config not found")
+		ToastMessageShow("First run. Enter a sensor name.", False)
+		'tsp_cfg.Initialize(rpcfg.GetSafeDirDefaultExternal(""), "tsp_cfg.txt", False)
+		Try
+			File.WriteString(rpcfg.GetSafeDirDefaultExternal(""), "tsp_cfg.txt", "starsX")
+		Catch
+			ToastMessageShow("First run. Can't write cfg file.", False)
+		End Try
+		Starter.NameSensor = "starsX"
+	Else
+		Starter.NameSensor = File.ReadString( rpcfg.GetSafeDirDefaultExternal(""), "tsp_cfg.txt")
+'		Log ("Leido: " & Starter.NameSensor)
+		EditText1.Text = Starter.NameSensor
+		EditText1.TextColor =Colors.RGB(0x7F,0x9D,0xF9)
+		If Starter.NameSensor.StartsWith("TAS") Then
+				BstartTas.Enabled = True
+				BstartTas.TextColor = Colors.Green
+				BstartTas.Color = Colors.DarkGray
+			Else
+				BstartTas.Enabled = False
+				BstartTas.Color = Colors.DarkGray
+				BstartTas.TextColor = Colors.Gray
+		End If
+	End If
+	
+'	WebView1.Visible = False
+	DateTime.DateFormat = "yyyy-MM-dd"
+	
+	
+End Sub
+
+
+Sub Activity_Resume
+	EditText1.TextColor = Colors.RGB(0x7F,0x9D,0xF9)
+	Label9.TextColor = Colors.LightGray
+	Label6.TextColor = Colors.LightGray
+	Label1.TextColor = Colors.LightGray
+	Lorientacion.TextColor = Colors.LightGray
+	Label3.TextColor = Colors.Green
+	Label5.TextColor = Colors.LightGray
+	Lversion.TextColor = Colors.LightGray
+	Lnelm.TextColor = Colors.LightGray
+	TBtiempo.Color = Colors.RGB(0x1F,0x1F,0x1F)'Colors.DarkGray
+	CBsave.TextColor = Colors.Green
+	CBsave.Color = Colors.Black
+	CBcolor.TextColor = Colors.Green
+	CBcolor.Color = Colors.DarkGray
+
+	Linform.TextColor = Colors.LightGray
+	
+	CBtir.TextColor = Colors.Green
+	CBtir.Color = Colors.DarkGray
+	
+	LtempIR.TextColor = Colors.Red
+	Ltsensor.TextColor = Colors.RGB(0x2F,0x60,0xF7) ' #2F60F7 'Colors.Blue
+	CBsave.Color = Colors.RGB(0x1F,0x1F,0x1F)' Colors.DarkGray
+	
+	If Starter.EstadoCBsabe = True Then '
+		CBsave.Checked = True
+		Else
+		CBsave.Checked = False
+	End If
+	
+	If Starter.FlagAlarmMV = True Then				
+		BAlarmaMV.TextColor = Colors.Green				
+	Else
+		BAlarmaMV.TextColor = Colors.LightGray
+	End If
+	If Starter.FlagAlarmIR = True Then
+		BAlarmaIR.TextColor = Colors.Green
+	Else
+		BAlarmaIR.TextColor = Colors.LightGray
+	End If
+	
+	If Starter.Magnitud = 24 Then
+		
+	End If
+	
+	Tim1s.Enabled=True
+	
+	TBtiempo.TextOn = Starter.TiempoSalvarSg & " s"
+	TBtiempo.TextOff = Starter.TiempoSalvarSg & " s"
+	btnReadData.Color = Colors.DarkGray
+	btnReadData.TextColor = Colors.Green
+	btnDisconnect.Color = Colors.DarkGray
+	btnDisconnect.TextColor = Colors.Green
+		
+	Button1.TextColor = Colors.Red
+	
+	Bscan.Color = Colors.DarkGray
+	Bscan.TextColor = Colors.Green
+	
+	BstartTas.Color = Colors.DarkGray
+
+	BstartTas.Color = Colors.DarkGray
+	If Starter.NameSensor.Contains("TAS") Then
+		BstartTas.Enabled = True
+		BstartTas.TextColor = Colors.Green
+	Else
+		BstartTas.Enabled = False		
+		BstartTas.TextColor = Colors.Gray
+	End If
+	
+	Elugar.Text =  Starter.Lugar
+	Elugar.TextColor = Colors.RGB(0x7F,0x9D,0xF9)
+	
+	CallSub(Starter,("StateChanged"))
+	
+
+End Sub
+
+Sub Activity_Pause (UserClosed As Boolean)
+	Tim1s.Enabled=True
+'	GPS1.Start(0, 0) 'Listen to GPS with no filters
+	TBtiempo.TextOn = Starter.TiempoSalvarSg & " s"
+	TBtiempo.TextOff = Starter.TiempoSalvarSg & " s"
+	
+End Sub
+
+
+Sub Activity_PermissionResult (Permission As String, Result As Boolean)
+'Log("ActiviPermiso")
+	If Permission = rpcfg.PERMISSION_ACCESS_COARSE_LOCATION Then
+'Log("Coarse")
+		If Result Then
+			CallSub(Starter, "StartGPS")
+		'	Init_GoogleMaps
+		End If
+	End If
+End Sub
+
+
+
+Public Sub StateChanged
+	'lblState.Text = Starter.currentStateText
+	Lcuenta.Text = Starter.currentStateText
+	If Starter.connected Then
+		Label5.Text = "Connected: " & Starter.ConnectedName & "   dB " & Starter.BTrssi
+		'Starter.NameSensor =  Starter.ConnectedName
+	Else
+		Label5.Text = "Not connected"
+	End If
+	btnDisconnect.Enabled = Starter.connected
+	Bscan.Enabled = Not(Starter.connected)
+'	btnReadData.Visible = False
+'	Bscan.Visible = False
+	btnReadData.Enabled = Starter.connected
+	Bscan.Enabled = (Starter.currentState = Starter.manager.STATE_POWERED_ON) And Starter.connected = False
+	
+	'CallSub(Starter, "ReadData")
+	
+End Sub
+
+
+
+Sub Tim1s_Tick  ' Timer de 1 sg
+'	Log(LayautActual)
+Dim batery As Float 
+
+'Log("pelin: " & Starter.esperapelin & "    EsperaMsg: " & Starter.EsperaMsg) 
+
+	If scaner = False Then		'Medidas suletas  ----
+		CBsave.Text = "Save"		
+		CBsave.Enabled = True
+		TBtiempo.Visible = True
+		Elugar.Enabled = True		
+	Else							'Escaneando ------
+		CBsave.Checked = False
+		CBsave.Enabled = False
+		CBsave.Text = "Auto"
+		TBtiempo.Visible = False
+		Elugar.Enabled = False
+		
+		Linform.Text = "Rec: " & Starter.nWr
+	End If
+		
+	Label1.Text ="Lat "&  Starter.Lat &  "  Lon " & Starter.Lon &  "  Alt " &  Round2(Starter.Alt,0)
+	
+	If Starter.CuentaSend > 0 Then
+		Lcuenta.Text  = "Rec: " & Starter.nWr & "   Send: " & Starter.CuentaSend
+	Else		
+		Lcuenta.Text  = "Rec: " & Starter.nWr 
+	End If
+		
+	If Starter.nWr = 145 Then
+		Starter.nWr = 0
+		Lcuenta.TextColor = Colors.Green
+		Lcuenta.Text  = "Scan of " & Starter.nWr & " points OK"
+		Linform.Visible = False
+Log("----quito inform 145")
+		'---
+		If	abrirfile145(Starter.nombreFich) = False Then
+			PanelMain.Visible = False
+			ListView1.Visible = True
+		Else			
+			AS145 = True
+			ListView1.Visible = False
+			PanelMain.Visible = True
+			PreparaSectores145
+		End If
+	Else
+		Lcuenta.TextColor = Colors.LightGray
+	End If
+	
+		
+	If (Starter.EsperaMsg = 0) And AvisoSensorFound = True   Then
+		Label5.Text = DateTime.Time(DateTime.Now) & " Sensor OK.  " & Starter.inform 
+		Label5.TextColor = Colors.LightGray
+		AvisoSensorFound = False
+				
+	End If
+	
+	If (Starter.esperapelin < 8)   Then
+		If PanelMain.Visible = False Then
+			Linform.Visible = True
+			Else
+			Linform.Visible = False
+		End If
+		If	Starter.Cuenta > 0 And Starter.esperapelin = 7 Then
+			Linform.Text =  Starter.inform & "  ALL OK "				
+		Else
+			Linform.Text =  Starter.inform 
+		End If
+	Else 
+		Linform.Visible = False
+'Log("----quito inform 8")
+	End If
+	
+	If (Starter.EsperaMsg > 8)   Then	'NO hay DATOS --------------
+		If PanelMain.Visible = False Then
+			Linform.Visible = True
+		Else
+			Linform.Visible = False
+
+		End If
+		
+		LtempIR.Text = "-"
+		Label3.Text = "-"
+		Ltsensor.Text = "-"
+	'	Lvbat.Text = "-"
+		If (Starter.EsperaMsg < 20)   Then
+			Label5.Text = DateTime.Time(DateTime.Now) & " NO Data."
+			Label5.TextColor = Colors.Red
+			PanelMain.Visible = False
+			ListView1.Visible = False
+			AvisoSensorFound = True
+		End If	
+	Else								'SI hay DATOS--------------
+		If Starter.DatoBle Then								'Si es BT 
+			If scaner = True And Starter.nWr < 145 Then     'Informa evolucion del scan
+				Starter.inform =  "  Point " & Starter.secuencia & "   Time: " & Starter.SegScan & " s"
+				Linform.Visible = True
+			Else
+				If Starter.esperapelin > 14 Then
+					Linform.Visible = False		
+'Log("----quito inform 14")
+				End If
+			End If
+			
+	'		Activity.Title = "TESS P " & Starter.RxByBT.SubString2(3,6)
+			Activity.Title = "TESS P " & Starter.NameSensor
+		'	Label5.Text = Starter.RxByBT
+			If scaner = True Then
+				Lorientacion.Text = "Al " &  Round2 ( Starter.Altura,0) & "   Az " &  Round2 (Starter.Azimut,0)
+			Else
+				Lorientacion.Text = "Al " &  Round2 ( Starter.AlturaAcel ,0) & "   Az " &  Round2 (Starter. AzimutAcel,0)
+			End If
+					
+	'		Label5.Text = "MAC: " & Starter.IdMac & "  ZP: " & Round2( Starter.ZPoint,2)			
+			Label6.Text = "Rx BT: " & Starter.Cuenta
+			
+			If Starter.Es155espera = 0	Then		
+				Label3.Text = "Mag: " & Round2 (Starter.Magnitud,2)
+			Else
+				Label3.Text = "Mag: " & Round2 (Starter.Magnitud,2) & " *" &  Starter.Es155espera
+			End If
+			Ltsensor.Text = "Tsens: " & Round2 ( Starter.TAmb,2)
+			LtempIR.Text = "T IR: " & Round2 ( Starter.TObj,2)
+			If Starter.Vbat > 0 And Starter.Vbat < 500 Then
+				batery = Starter.Vbat ' tension diodo + v
+				If batery < 4.3 Then					
+					Lvbat.Text = "Bat: " & Round2 (batery,2)  & "v"
+					If batery > 3.9 Then
+						Lvbat.TextColor = Colors.Green
+					Else If batery > 3.7 Then
+						Lvbat.TextColor = Colors.LightGray
+					Else If batery < 3.7 Then
+						Lvbat.TextColor = Colors.Red
+						Label5.TextColor = Colors.Red
+						
+						Label5.Text = "LOW BATERY " &  Round2 (batery,2) & "v"
+					End If
+				Else
+					Lvbat.Text = "Charged" 
+				End If
+			Else
+				Lvbat.TextColor = Colors.Black
+			End If
+'			
+			If Starter.TObj > 0 Then
+				LtempIR.TextColor = Colors.Red
+			Else	
+				LtempIR.TextColor = Colors.Green
+			End If
+			
+			If Starter.Magnitud = 24 Then
+				Label3.TextColor = Colors.Red
+			Else
+				Label3.TextColor = Colors.Green
+			End If
+
+			
+		Else							'Es dato por UDP			
+	'		Linform.Visible = False 
+'	Log("----quito inform udp")
+		    Label9.Text = "IP: " & Starter.dirurlSelec
+			Label6.Text =  "Rx WF: " & Starter.CuentaUDP &  "  +" & Starter.UdpLost
+			Lorientacion.Text = "Al " & Round2 ( Starter.Altura,0) & "   Az " & Round2 ( Starter.Azimut,0)
+			Label3.Text = "Mag: " & Round2 (Starter.Magnitud,2)
+			Ltsensor.Text = "Tsens: " & Round2 ( Starter.TAmb,2)
+			LtempIR.Text = "T IR: " & Round2 ( Starter.TObj,2)
+		End If
+		
+		If (Starter.Magnitud > 5) And (Starter.Magnitud < 24) Then
+			Lnelm.Text = "NELM: " & Round2( MagnitudVisual(Starter.Magnitud), 1)
+		Else
+			Lnelm.Text = "NELM: " 
+		End If
+		
+		Starter.CuentaSg = Starter.CuentaSg + 1
+		If Starter.CuentaSg > 60 Then
+			Starter.CuentaSg = 0
+'			Button1_Click ' acutaliza web page
+		End If
+
+	End If
+	
+	If Starter.OtrosBT Then
+		Starter.OtrosBT = False
+		Label9.Text =  "Other BT: "  & Starter.NameSensorRxOtro
+	End If
+	If Starter.OtrosUdp Then
+		Starter.OtrosUdp = False
+		Label9.Text =  "Other W: "  & Starter.NameSensorRxOtro & " " & Starter.dirurl
+	End If
+
+
+	If Starter.MyTess = True Then
+		If Starter.DatoBle = True Then
+			Bmqtt.Visible = True
+		Else
+			Bmqtt.Visible = False
+		End If
+	Else
+		If Starter.DatoBle = False Then
+			Bmqtt.Visible = True
+		End If
+	End If
+	
+	If Starter.FicheroCreado Then
+		Label5.TextColor = Colors.White
+		Label5.Text =  " File: "  & Starter.nombreFich & " Folder: " & rpcfg.GetSafeDirDefaultExternal("")
+		Label5.Text =  "File: "   & rpcfg.GetSafeDirDefaultExternal("") &"/" & Starter.nombreFich
+		Starter.FicheroCreado = False
+	End If
+
+	If Starter.FicheroCreadoTodo Then
+		Label5.TextColor = Colors.White
+		Label5.Text =  "File: "  & Starter.nombreFichTodo & " Folder: " & rpcfg.GetSafeDirDefaultExternal("")
+		Label5.Text =  "File: "  & rpcfg.GetSafeDirDefaultExternal("") &"/" & Starter.nombreFichTodo
+		Starter.FicheroCreadoTodo = False
+	End If
+	
+	If Starter.AlarmIR = True Then
+		BAlarmaIR.TextColor = Colors.Red		
+	End If
+	If Starter.AlarmMV = True Then
+		BAlarmaMV.TextColor = Colors.Red		
+	End If
+	
+	If Starter.salvandoScan = False Then
+		BstartTas.Text = "START"
+		'BstartTas.TextColor = Colors.Green
+	 Else
+		BstartTas.Text = "STOP"
+	End If
+	If Starter.secuencia = 2 Then
+		BstartTas.TextColor = Colors.Green
+		BstartTas.Enabled = True
+	End If
+	
+'	If Starter.inform.Length > 4 Then
+'		Linform.Text = DateTime.Time(DateTime.Now) & " " & Starter.inform
+'	'	Starter.inform = " "
+'	End If
+End Sub
+
+'TESPE30m11.75i24.65a28.23
+
+
+'
+'Sub Button1_Click
+'	If(WebView1.Visible = True) Then	'solo pide actualizar si esta visible el browser
+'		dir =  "http:\\" &  Starter.dirurlSelec
+'		WebView1.LoadUrl(dir)
+'	End If
+'End Sub
+'
+'Sub WebView1_PageFinished (url As String)
+'	'ListView1.AddSingleLine(WebView1.Url)
+'	'ListView1.AddSingleLine("pagina ok")
+'End Sub
+'
+
+Sub Bmqtt_Click	 'boton SAVE & SEND
+	Dim JSONGenerator  As JSONGenerator
+	Dim strjson As String
+	
+	If Starter.EsperaMsg > 10 Then
+		Return
+	End If	  
+	Starter.espera = 0
+	
+	Bmqtt.TextColor = Colors.Green	
+
+	If Starter.DatoBle Then
+		JSONGenerator.Initialize(Starter.MapBT)
+	Else
+		JSONGenerator.Initialize(Starter.Map1)
+	End If
+	
+	'strjson = JSONGenerator.ToPrettyString(2)
+	strjson = JSONGenerator.ToString
+'	ListView1.Items.Add(st)	
+
+	If mqconectado = False Then
+		If myconmq.IsInitialized Then 
+'			Log("Ya se inicializó")
+		Else		
+			myconmq.Initialize(mqtt_user_local, mqtt_password_local)
+		End If
+		mqtt.Connect2(myconmq)
+		wait for Mqtt_Connected (Success As Boolean)
+		If Success Then			
+			TimBoton.Enabled = True
+			Label1.Text = "MQTT connection OK"
+			mqconectado = True
+		Else
+			Bmqtt.TextColor = Colors.Red
+			TimBoton.Enabled = True
+			Label1.Text =  "Send FAIL to " & mqtt_server_local
+		End If
+		
+	End If
+	If (mqconectado = True) Then
+'	mqtt.Publish(  "STARS4ALL/" & NameSensor & "pruebaB4J/reading",  strjson.GetBytes("UTF8"))
+		my_topic = my_topic.Replace("pruebaj", Starter.NameSensor)
+'		Log(CuentaSend)
+		Starter.CuentaSend = Starter.CuentaSend + 1
+		'	Lcuenta.Text = "MQT:" & Starter.CuentaSend &  " Wr:" & nWr
+		mqtt.Publish(  my_topic,  strjson.GetBytes("UTF8"))
+		Label5.Text = DateTime.Time(DateTime.Now) &  " Send OK to " & mqtt_server_local
+		Starter.espera = 0
+		TimBoton.Enabled = True
+	End If
+	 ' GuardaDato ' cada envio se guarda
+End Sub
+
+
+Sub CBsave_CheckedChange(Checked As Boolean)
+	Starter.espera = 0
+	
+	If (CBsave.Checked = True)  Then
+		If Starter.EstadoCBsabe = False Then	
+			Starter.bep.Initialize(100,600)
+			Label5.Text ="Start Rec data " & DateTime.Time(DateTime.Now)
+			Starter.NameFile = DateTime.Date(DateTime.Now)
+			Starter.EstadoCBsabe = True
+			Starter.Tescaneo = 0
+			Starter.nWr = 0
+		Else			'ya estaba salvando
+			
+		End If
+'		Starter.pws.KeepAlive(False)
+	Else
+		Label5.Text = "Stop Rec data  " &  DateTime.Time(DateTime.Now)
+		Starter.EstadoCBsabe = False
+'		Starter.pws.ReleaseKeepAlive
+		
+	End If
+End Sub
+
+'
+'Sub CBsalvar_CheckedChange(Checked As Boolean)
+'	
+'	If CBsave.Checked = True Then
+'		Starter.nlinea = 0
+'		Starter.Altura = 90
+'		Starter.Azimut = 0
+'		Starter.CBsalvar = True
+'		Starter.NameFile =  DateTime.Date(DateTime.Now) & "_" & DateTime.Time(DateTime.Now)
+''		Log("Salvando en " & Starter.NameFile)
+'		Label5.Text ="Start Rec data " & DateTime.Time(DateTime.Now)
+'	Else
+'		Starter.CBsalvar = False
+'	End If
+'	
+'End Sub
+'
+
+
+Sub TimBoton_Tick  ' Timer para no repetir intento de envio mqtt
+	TimBoton.Enabled = False
+	Bmqtt.TextColor = Colors.Gray
+
+	
+End Sub
+
+Sub TBtiempo_CheckedChange(Checked As Boolean)
+
+'	
+'	If TBtiempo.Checked = True Then
+'		Starter.TiempoSalvarSg = 1	
+'		Label5.Text = " Record time 1sg."
+'	Else
+'		Starter.TiempoSalvarSg = 10	
+'		Label5.Text = " Record time 10sg."
+'	End If
+	If Starter.TiempoSalvarSg  = 1 Then
+		Starter.TiempoSalvarSg  =  10
+	Else If Starter.TiempoSalvarSg  < 60 Then
+		Starter.TiempoSalvarSg  = Starter.TiempoSalvarSg  + 10
+	Else
+		Starter.TiempoSalvarSg  = 1 
+	End If
+	
+
+	TBtiempo.TextOn = Starter.TiempoSalvarSg & " s"
+	TBtiempo.TextOff = Starter.TiempoSalvarSg & " s"
+	Label5.Text = " Record time " & Starter.TiempoSalvarSg  & " s"
+End Sub
+
+
+Sub Elugar_EnterPressed
+	Starter.Lugar = Elugar.Text	
+	TimBoton.Enabled = True
+	Elugar.TextColor = Colors.RGB(0x7F,0x9D,0xF9)
+End Sub
+
+Sub Elugar_TextChanged (Old As String, New As String)
+	Elugar.TextColor = Colors.Red
+End Sub
+
+Sub DataAvailable (Service As String, Characteristics As Map)
+	
+'	pbReadData.Visible = False
+	'pasa a starter
+'	For Each id As String In Characteristics.Keys
+'		If id = "6e400003-b5a3-f393-e0a9-e50e24dcca9e" Then
+	''			clv.Add(CreateCharacteristicItem(id, Characteristics.Get(id)), "")
+'			CreateCharacteristicItem(id, Characteristics.Get(id))
+'		End If
+'	Next
+End Sub
+
+
+Sub Bgraph_Click
+	
+	Dim listafiles As List
+	Dim i,c,d As Int
+	Dim fichero As String
+	
+	PanelMain.Visible = False
+	ListView1.Clear
+	
+	If ListView1.Visible = False Then
+		ListView1.Visible = True
+	Else
+		ListView1.Visible = False
+		End If
+
+	ListView1.SingleLineLayout.Label.TextSize = 14
+	ListView1.FastScrollEnabled = True
+	ListView1.SingleLineLayout.ItemHeight = 60
+	ListView1.SingleLineLayout.Label.TextColor = Colors.Green
+		
+
+	'listafiles = File.ListFiles(File.DirRootExternal)
+	listafiles = File.ListFiles(rpcfg.GetSafeDirDefaultExternal(""))'GetSafeDirDefaultExternal
+	listafiles.Sort(True)
+	For i = 0 To  listafiles.Size -1
+		fichero =  	listafiles.Get(i)		
+		d = d+1
+		If  fichero.Contains("txt") Then
+			If fichero.Contains("TSP") Or fichero.Contains("TAS") Then
+				ListView1.AddSingleLine(listafiles.Get(i) )
+				c = c + 1
+			End If			
+		End If
+	Next
+'	Label5.Text = "Total Files: " & d &"  TAS/TSP: " & c
+	
+
+End Sub
+
+
+
+Sub abrirfile (NombreFich As String) As Boolean  'Abre fichero raw y saca fichero intermedio sel.txt
+	
+	Private sealev As Float
+	Private altura, alturaold As Float
+	Private acimut, acimutold As Float
+	
+	Private fsalida As String
+
+	Private espera, numrow, nuevarow, nc As Int
+	Private strsalida, strlinea As String
+	Private head As List
+	Private contenido As String
+
+	
+'	fentrada = Starter.nombreFich
+	
+	fentrada = NombreFich
+'	Log(fentrada)
+'	fentrada = "TSP58C_2018-10-03_pisci.txt"
+
+	fsalida = "sel.txt"
+	TempIRmin = 100
+	Label5.TextColor = Colors.White
+		
+	'If File.Exists(File.DirRootExternal, NombreFich) Then
+	If File.Exists(rpcfg.GetSafeDirDefaultExternal(""), NombreFich) = True Then  		'Existe
+		Dim su As StringUtils
+		Dim Table As List
+		
+		'If File.Exists(File.DirRootExternal, fsalida) Then
+		If File.Exists(rpcfg.GetSafeDirDefaultExternal(""), fsalida) = True Then  		'Existe
+			'File.Delete(File.DirRootExternal, fsalida)
+			File.Delete(rpcfg.GetSafeDirDefaultExternal(""), fsalida)			
+		End If
+		strsalida = ""
+		'contenido = File.ReadString(File.DirRootExternal, NombreFich)
+		contenido = File.ReadString(rpcfg.GetSafeDirDefaultExternal(""), NombreFich)
+		
+		If contenido.IndexOf("#") = 0 Then
+			If contenido.LastIndexOf("#") > 0 Then
+				Label5.TextColor = Colors.Red
+				Label5.Text = "No scan file."
+				Return(False)
+			End If
+			'Table = su.LoadCSV2( File.DirRootExternal, NombreFich, Chr(9) , head)
+			Table = su.LoadCSV2( rpcfg.GetSafeDirDefaultExternal(""), NombreFich, Chr(9) , head)
+			For Each Row() As String In Table
+				numrow = numrow + 1
+				If (Row(3) < TempIRmin) Then
+					TempIRmin = Row(3)
+					TempAmb = Row(4)
+				End If
+				altura = Row(6)
+'				acimut = Row(7)
+				altura = Row(7)
+				acimut = Row(8)
+				Try
+				'		sealev = Row(10) 'cuando no hay GPS parece faltar una columna
+					sealev = Row(11) 'cuando no hay GPS parece faltar una columna
+				Catch
+'					Log(Row(10))
+					sealev = 0
+				End Try
+			
+			
+				caldifacimut( acimut, acimutold)
+'				If (altura > alturaold + 3) Or (altura < alturaold - 3)  Or (acimut > acimutold + 14) Or (acimut < acimutold - 14)   Then
+				If (altura > alturaold + 3) Or (altura < alturaold - 3)  Or (difacimut > 14)    Then
+					espera = espera + 1
+					If espera > 4 Then
+						espera = 0
+						nuevarow = nuevarow + 1
+						alturaold = altura
+						acimutold = acimut
+						'	If nuevarow < 43 Then
+						If nuevarow < 49 Then
+							
+							Private corto As String
+						'	corto = Row(9).SubString2(0, Row(9).IndexOf(",")+2)
+							corto = Row(10).SubString2(0, Row(10).IndexOf(",")+2)
+						'	LatLongSl = Row(0) & "  " & Row(1) & "    Lat.: " &  Row(8) & "   Long.: " & Row(9) ' & "   SL: " & Row(10)
+						'	LatLongSl = Row(0) & "  " & Row(1) & "    Lat.: " &  Row(8).SubString2(0, Row(8).IndexOf(",")+2) & "   Long.: " & corto ' & "   SL: " & Row(10)
+							LatLongSl = Row(1) & "  " & Row(2) & "    Lat.: " &  Row(9).SubString2(0, Row(9).IndexOf(",")+2) & "   Long.: " & corto ' & "   SL: " & Row(10)
+							Lati = " Lat: " & Row(9).SubString2(0, Row(9).IndexOf(",")+2)
+							Longi = " Lon: " & corto
+							HoraSl = " SL: " & sealev & " m"
+							
+							Hora =  Row(2)
+						'	LatLongSl = LatLongSl  & "   SL: " & sealev
+							For nc = 0 To Row.Length-1
+								strsalida = strsalida  & Row(nc)	& "	"
+								strlinea = strlinea  & Row(nc)	& "	"
+							Next
+							'If nuevarow < 42 Then
+							If nuevarow < 48 Then
+								strsalida = strsalida & CRLF
+								strlinea = strlinea & CRLF
+							End If
+							'ListView1.Items.Add (nuevarow & "  " & strlinea )
+						End If
+					End If
+				End If
+			Next
+'			Lpiepag.Text = LatLongSl			
+'			ListView1.Items.Add ("Total filas " & nuevarow)
+			If nuevarow > 47 Then
+				Label5.TextColor = Colors.White
+				Label5.Text = "OK file. Total rows found: " & nuevarow
+			'	Bsavegraph.Visible = True
+				Try
+					File.WriteString(rpcfg.GetSafeDirDefaultExternal(""), fsalida, strsalida)
+				Catch
+					ToastMessageShow("Can't write file.", False)
+				End Try
+				Return(True)																					
+			Else
+				Label5.TextColor = Colors.Red
+				Label5.Text = NombreFich &  " Invalid scan file. Rows < 48: " & nuevarow
+				Return(False)
+			End If
+			
+		Else
+			'ListView1.Items.Add ( "Caracter de comienzo no encontrado." )
+			Label5.TextColor = Colors.Red
+			Label5.Text = "Invalid scan file."
+			Return(False)
+		End If
+	Return(True)			
+	Else
+		' ListView1.Items.Add ("No existe fichero: " & fentrada)
+'		Log("fich not found")
+		Label5.TextColor = Colors.Red
+		Label5.Text = NombreFich & "  not found. "
+		Return(False)
+	End If
+	
+End Sub
+
+Sub abrirfile145 (Nombre As String) As Boolean  ' Abre fichero raw
+	
+	Private sealev As Float
+	Private altura, alturaold As Float
+	Private acimut, acimutold As Float
+
+	Private fsalida As String
+
+	Private  numrow, anterow As Int
+	Private strsalida, strlinea As String
+	Private head As List
+	Private contenido As String
+	
+	fentrada = Nombre
+	fsalida = "sel.txt"
+	TempIRmin = 100
+	numrowreal = 0
+	anterow = 0
+	'If File.Exists(File.DirApp,fentrada) Then
+	If File.Exists(rpcfg.GetSafeDirDefaultExternal(""), Nombre) = True Then  		'Existe
+		Dim su As StringUtils
+		Dim Table As List
+		
+		If File.Exists(rpcfg.GetSafeDirDefaultExternal(""), fsalida) = True Then  		'Existe
+			'File.Delete(File.DirRootExternal, fsalida)
+			File.Delete(rpcfg.GetSafeDirDefaultExternal(""), fsalida)
+		End If
+		strsalida = ""
+		
+	'contenido = File.ReadString(File.DirApp,fentrada)
+		contenido = File.ReadString(rpcfg.GetSafeDirDefaultExternal(""), Nombre)
+
+		
+		If contenido.IndexOf("#") = 0 Then
+			If contenido.LastIndexOf("#") > 0 Then
+'				ListView1.Items.Add ( "Multiples # " )
+				'Lpiepag.Text = "Multiple starting simbol #"
+				Label5.TextColor = Colors.Red
+				Label5.Text = "Invalid file."
+'				LatLongSl =  "Multiples # "
+				Return(False)
+			End If
+			
+			'Table = su.LoadCSV2( File.DirApp,fentrada, Chr(9) , head)
+			Table = su.LoadCSV2( rpcfg.GetSafeDirDefaultExternal(""), Nombre, Chr(9) , head)
+			MVmin = 100
+			MVmax = 0
+			For nc = 0 To  145
+				MagAS(nc) = 22
+			Next
+			
+
+			For Each row() As String In Table				
+				numrow = row(0)
+				If numrow = 0 Then
+					numrow = 1
+				End If
+				numrowreal = numrowreal + 1
+
+				If numrow = anterow + 1  Then
+					' normal
+				Else if numrow  = anterow + 2 Then  ' 1 perdida
+					If CBtir.Checked = True Then
+						MagAS(numrow-1) = row(3)
+					Else
+						MagAS(numrow-1) = row(5)
+					End If	
+'					Log("recuperado " & anterow)
+				Else If numrow  = anterow + 3 Then   ' perdidas
+'					Log(numrow & "  recuperado 2s " & anterow)
+					If CBtir.Checked = True Then
+						MagAS(numrow-1) = row(3)
+						MagAS(numrow-2) = row(3)
+					Else
+						MagAS(numrow-1) = row(5)
+						MagAS(numrow-2) = row(5)
+					End If										
+				End If
+				anterow = numrow
+				
+				altura = row(7)
+				acimut = row(8)
+				If CBtir.Checked = True Then
+					MagAS(numrow) = row(3)
+				Else
+					MagAS(numrow) = row(5)
+				End If
+				Try					
+					sealev = row(11) 'cuando no hay GPS parece faltar una columna	
+				Catch
+					sealev = 0
+				End Try
+
+				If (row(3) < TempIRmin) Then
+					TempIRmin = row(3)
+					TempAmb = row(4)
+				End If
+							
+																			
+				If MagAS(numrow) < MVmin Then
+					MVmin = MagAS(numrow)
+				Else if MagAS(numrow) > MVmax Then
+					MVmax = MagAS(numrow)
+				End If
+		'		Log(numrow)
+'				Label5.Text = "row: " & numrow
+				Private corto As String
+				corto = row(10).SubString2(0, row(10).IndexOf(",")+2)
+				LatLongSl =  "  " & row(2) & " Lat: " &  row(9).SubString2(0, row(9).IndexOf(",")+2) & "  Lon: " & corto ' & "   SL: " & Row(10)
+				LatLongSl = LatLongSl  & "  SL: " & sealev
+				Lati = " Lat: " & row(9).SubString2(0, row(9).IndexOf(",")+2)
+				Longi = " Lon: " & corto 
+				HoraSl = " SL: " & sealev & " m"
+			Next
+
+
+			If numrowreal = 145 Then
+			'	Lpiepag.Text = "OK file. Total rows found: " & numrow
+				Label5.TextColor = Colors.White
+				Label5.Text = Nombre & "   OK"
+				'File.WriteString(File.DirApp, fsalida, strsalida)										
+			Else
+				'Lpiepag.Text = "Error. Total rows < 145: " & nuevarow
+				Label5.TextColor = Colors.Red
+				Label5.Text = Nombre & "  Lost: " & (145 - numrowreal)
+			'	Return(False)
+			End If
+			
+		Else
+			'ListView1.Items.Add ( "Caracter de comienzo no encontrado." )
+			'Lpiepag.Text = "Starting simbol # not found."
+			Label5.TextColor = Colors.Red
+			'Label5.Text = "Starting simbol # not found."
+			Label5.Text = Nombre & " Error Row " & numrow
+			Return(False)
+		End If
+		Return(True)
+	Else
+		' ListView1.Items.Add ("No existe fichero: " & fentrada)
+		'Lpiepag.Text =  fentrada & "  not found. "
+		Label5.TextColor = Colors.Red
+		Label5.Text = Nombre & "  not found. "
+		Return(False)
+	End If
+	
+End Sub
+
+
+
+Sub caldifacimut(ac1 As Int, ac2 As Int)
+
+	If ( (ac1 > 350) And (ac2 < 10)) Then
+		difacimut = (360 - ac1 + ac2)
+	Else If ((ac1 < 10) And (ac2 > 350)) Then
+		difacimut =  360 - ac2 + ac1
+	Else
+		difacimut = Abs(ac1 - ac2)
+	End If
+	
+End Sub
+
+
+
+
+
+Private Sub draw_sector(altura As Float, azimut As Float, magnitud As Float, cx As Float, cy As Float, pCan As B4XCanvas, grados As Int, altu As Int)
+'Private Sub draw_sector(altura As Float, azimut As Float, magnitud As Float, cx As Float, cy As Float, pCan As B4XCanvas)
+	Dim p1 As B4XPath
+	Private ang1, ang2, inc_ang, x1, y1, xt, yt, r1, r2 As Float
+	Private mm As Float = magnitud
+	Dim ff As B4XFont = xui.CreateDefaultFont(8)
+	Dim mpal As Int
+	Dim ranb As Float
+	
+	ang1 = azimut -1
+	alto = altu
+	
+	
+	If (PanelMain.Width < 650) Then 'para tablet de 1900x1133 donde el PanelMain sale a escala * 2
+		alto = altu/2
+		altura = altura/2
+	End If
+	
+	ancho = grados
+	ang2 = (azimut + ancho ) + 1
+	inc_ang = (ang2 - ang1) / 10.0
+	
+	
+	If AS145 = False Then
+'	altura = altura * 3.0
+	altura = altura * 5.0	
+	r1 = altura - 1
+'	r2 = (altura + alto * 3) + 1
+	r2 = (altura + alto * 5) + 1
+	Else
+		altura = altura * 6.0
+		r1 = altura - 1
+		r2 = (altura + alto * 6) + 1
+		
+	End If
+	
+	x1 = cx + r1 * CosD(ang1)
+	y1 = cy + r1 * SinD(ang1)
+	p1.Initialize(x1, y1)
+	x1 = cx + r2 * CosD(ang1)
+	y1 = cy + r2 * SinD(ang1)
+	p1.LineTo(x1, y1)
+	
+	For np = 0 To 10
+		x1 = cx + r2 * CosD(ang1 + inc_ang * np)
+		y1 = cy + r2 * SinD(ang1 + inc_ang * np)
+		p1.LineTo(x1, y1)
+	Next
+	
+	
+	x1 = cx + r2 * CosD(ang2)
+	y1 = cy + r2 * SinD(ang2)
+	p1.LineTo(x1, y1)
+	x1 = cx + r1 * CosD(ang2)
+	y1 = cy + r1 * SinD(ang2)
+	p1.LineTo(x1, y1)
+	For np = 0 To 10
+		x1 = cx + r1 * CosD(ang2 - inc_ang * np)
+		y1 = cy + r1 * SinD(ang2 - inc_ang * np)
+		p1.LineTo(x1, y1)
+	Next
+	
+	xt = cx + (r2+r1 + 25) / 2 * CosD((ang2+ang1)/2)
+	yt = cy + (r2+r1 + 25) / 2 * SinD((ang2+ang1)/2)
+	
+	If magnitud = 0 Then		
+		pCan.DrawPath(p1, xui.Color_ARGB(255, 255, 255, 255  ), True, 1)
+	Else
+		If CBcolor.Checked = False Then
+			colorgrafo = ""
+			magnitud = Brillomax - magnitud
+			Dim ranb As Float = rango * (Brillomax - Brillomin)
+	'		Dim ranb As Float = 1.9	
+			pCan.DrawPath(p1, xui.Color_ARGB(255, magnitud*255.0/ranb, magnitud*255.0/ranb, magnitud*255.0/ranb  ), True, 1)
+		Else
+			colorgrafo = "_c"
+			ranb = 0.90 * (Brillomax - Brillomin)		
+			CargaPaletaNixNox
+			mpal = ((magnitud - Brillomin)*31)/ranb
+			If mpal > 31 Then
+				mpal = 31
+			End If
+			If mpal < 0  Then
+				mpal = 0
+			End If
+			If CBtir.Checked = False Then
+				mpal = 31-mpal
+			End If
+							
+		'	Log("mag " & magnitud & "  mpal " &mpal &"  Rang "& ranb)
+			pCan.DrawPath(p1, xui.Color_ARGB(255, mR(mpal), mG(mpal), mB(mpal)  ), True, 1)
+		End If
+	End If
+
+'	If (altura > 0)  Then
+'		pCan.DrawText(NumberFormat( mm, 2, 2), xt, yt, ff, xui.Color_Green, "CENTER")
+'	Else			
+'		MagCenit = MagCenit + mm	'promedio de lecturas 80º
+'	End If
+	
+	
+	If AS145 = False Then
+		If (altura > 0)  Then
+			pCan.DrawText(NumberFormat( mm, 2, 2), xt, yt, ff, xui.Color_Green, "CENTER")
+		Else			
+			MagCenit = MagCenit + mm	'promedio de lecturas 80º
+		End If
+	Else
+		If grados = 360 Then
+			pCan.DrawText(NumberFormat( mm, 2, 2), xt+10, yt, ff, xui.Color_Green, "CENTER")	'centra texto en 90º
+		End If
+
+		If grados = 45 Then
+			pCan.DrawText(NumberFormat( mm, 2, 2), xt, yt, ff, xui.Color_Green, "CENTER")	'centra texto en 90º
+		End If
+
+
+		If grados = 22 Then
+			pCan.DrawText(NumberFormat( mm, 2, 2), xt, yt, ff, xui.Color_Green, "CENTER")	'centra texto en 90º
+		End If
+
+		If grados = 15 Then
+			pCan.DrawText(NumberFormat( mm, 2, 2), xt, yt, ff, xui.Color_Green, "CENTER")	'centra texto en 90º
+		End If
+
+				
+		If azimut = 0 Then
+'			pCan.DrawText(NumberFormat( mm, 2, 2), xt, yt, ff, xui.Color_Green, "CENTER")
+'			altertxt = 0
+		End If
+'		altertxt = altertxt +1	
+	End If
+End Sub
+
+
+
+
+Private Sub bz	' Del fichero intermedio extrae tabla a representar y llama draw_sector
+'	PanelMain.RemoveAllViews
+'	Dim Can As B4XCanvas
+'	Can.Initialize(PanelMain)
+	Private ma As Float
+	Private nombre_fichero As String
+'	Dim R As B4XRect
+'	R.Initialize(0,0,PanelMain.Width,PanelMain.Height)
+'	Can.DrawRect(R,xui.Color_White,True,1dip)
+	Private nlinea As Int
+	Private naltura(48), nazimuth(48) As Int
+'	Dim f12 As B4XFont = xui.CreateDefaultFont(10)
+'	Private fich As String
+	
+	naltura(0) = 0
+	naltura(1) = 1
+	naltura(2) = 2
+	naltura(3) = 3
+	naltura(4) = 3
+	naltura(5) = 2
+	naltura(6) = 1
+	naltura(7) = 0
+
+	naltura(8) = 0
+	naltura(9) = 1
+	naltura(10) = 2
+	naltura(11) = 3
+	naltura(12) = 3
+	naltura(13) = 2
+	naltura(14) = 1
+	naltura(15) = 0
+
+	naltura(16) = 0
+	naltura(17) = 1
+	naltura(18) = 2
+	naltura(19) = 3
+	naltura(20) = 3
+	naltura(21) = 2
+	naltura(22) = 1
+	naltura(23) = 0
+
+	naltura(24) = 0
+	naltura(25) = 1
+	naltura(26) = 2
+	naltura(27) = 3
+	naltura(28) = 3
+	naltura(29) = 2
+	naltura(30) = 1
+	naltura(31) = 0
+
+	naltura(32) = 0
+	naltura(33) = 1
+	naltura(34) = 2
+	naltura(35) = 3
+	naltura(36) = 3
+	naltura(37) = 2
+	naltura(38) = 1
+	naltura(39) = 0
+
+	naltura(40) = 0
+	naltura(41) = 1
+	naltura(42) = 2
+	naltura(43) = 3
+	naltura(44) = 3
+	naltura(45) = 2
+	naltura(46) = 1
+	naltura(47) = 0
+
+	nazimuth(0) = 0
+	nazimuth(1) = 0
+	nazimuth(2) = 0
+	nazimuth(3) = 0
+	nazimuth(4) = 6
+	nazimuth(5) = 6
+	nazimuth(6) = 6
+	nazimuth(7) = 6
+
+	nazimuth(8) = 1
+	nazimuth(9) = 1
+	nazimuth(10) = 1
+	nazimuth(11) = 1
+	nazimuth(12) = 7
+	nazimuth(13) = 7
+	nazimuth(14) = 7
+	nazimuth(15) = 7
+
+	nazimuth(16) = 2
+	nazimuth(17) = 2
+	nazimuth(18) = 2
+	nazimuth(19) = 2
+	nazimuth(20) = 8
+	nazimuth(21) = 8
+	nazimuth(22) = 8
+	nazimuth(23) = 8
+
+
+	nazimuth(24) = 3
+	nazimuth(25) = 3
+	nazimuth(26) = 3
+	nazimuth(27) = 3
+	nazimuth(28) = 9
+	nazimuth(29) = 9
+	nazimuth(30) = 9
+	nazimuth(31) = 9
+
+	nazimuth(32) = 4
+	nazimuth(33) = 4
+	nazimuth(34) = 4
+	nazimuth(35) = 4
+	nazimuth(36) = 10
+	nazimuth(37) = 10
+	nazimuth(38) = 10
+	nazimuth(39) = 10
+
+	nazimuth(40) = 5
+	nazimuth(41) = 5
+	nazimuth(42) = 5
+	nazimuth(43) = 5
+	nazimuth(44) = 11
+	nazimuth(45) = 11
+	nazimuth(46) = 11
+	nazimuth(47) = 11
+
+	nombre_fichero = "sel.txt"	'fichero intermedio con los resultados ya seleccionados con 48 lineas
+	
+	If File.Exists(rpcfg.GetSafeDirDefaultExternal(""), nombre_fichero) Then
+		Dim su As StringUtils
+		Dim Table As List
+				
+		Table = su.LoadCSV(rpcfg.GetSafeDirDefaultExternal(""), nombre_fichero, Chr(9))
+		nlinea = 0
+		'	nlinea2 = 0
+		MVmin = 100
+		MVmax = 0
+		For Each Row() As String In Table
+			'ma = Row(4)
+			ma = Row(5)
+			If nlinea < 48 Then
+				mag2(naltura(nlinea), nazimuth(nlinea)) = ma
+				nlinea = nlinea + 1
+				If ma < MVmin Then
+					MVmin = ma
+				Else if ma > MVmax Then
+					MVmax = ma
+				End If
+			End If
+		Next
+		'Lpiepag.Text = Lpiepag.Text & "  MV max:" & Round2(MVmax,2) & "  min:" & Round2( MVmin, 2)
+	Else
+
+		Return
+	End If
+	
+	If nlinea > 47 Then		' terminada tabla se pinta
+		Brillomax = MVmax
+		Brillomin = MVmin
+	'	Lmvmax.Text = Round2( MVmax,2)
+	'	Lmvmin.Text = Round2( MVmin,2)
+'		If CBauto.Checked = True Then
+'			Smvmax.Value = MVmax
+'			Smvmin.Value = MVmin
+'			rango =   Sbrillo.MinValue + Sbrillo.MaxValue - Sbrillo.Value	'1 + 2 - value = 3 - value = 2 a 1
+'		Else
+'			Lmvmax.Text =Round2( Smvmax.Value,1)
+'			Lmvmin.Text =Round2( Smvmin.Value,1)
+'		End If
+
+		PreparaSectores
+
+	End If
+End Sub
+
+
+
+Private Sub PreparaSectores
+
+	PanelMain.RemoveAllViews ' para poder refrescar el grafico
+'	Dim f12 As B4XFont = xui.CreateDefaultFont(10)
+	Dim f10 As B4XFont = xui.CreateDefaultFont(8)
+	Dim f12 As B4XFont = xui.CreateDefaultFont(10)
+	Dim f14 As B4XFont = xui.CreateDefaultFont(12)
+	Private fich As String
+	Dim R As B4XRect
+	Can.Initialize(PanelMain)
+	
+	R.Initialize(0,0,PanelMain.Width,PanelMain.Height)
+	Can.DrawRect(R,xui.Color_Black,True,1dip)
+	
+	MagCenit = 0	
+	For naz = 0 To 11
+		For nal = 0 To 3
+		'	draw_sector((3-nal)*20, (naz)*30 - 105.0, mag2(nal, naz), 250, 250, Can) 'giro en sentido horario
+'			draw_sector((3-nal)*20, (naz)*30 - 105.0, mag2(nal, naz), PanelMain.Width/2,PanelMain.Height/2, Can) 'giro en sentido horario
+			draw_sector((3-nal)*20, (naz)*30 - 105.0, mag2(nal, naz), PanelMain.Width/2,PanelMain.Height/2, Can,30,20) 'giro en sentido horario
+
+		Next
+	Next
+	
+'	draw_sector((3)*20, (naz)*30 - 105.0, MagCenit/8.0, PanelMain.Width/2,PanelMain.Height/2, Can) 'giro en sentido horario
+	Can.DrawText( Round2(MagCenit/12.0 ,2), PanelMain.Width/2, PanelMain.Height/2, f14, xui.Color_Green, "CENTER")
+
+'	fich = fentrada.SubString2(0, fentrada.IndexOf("."))
+'	Can.DrawText(fich,PanelMain.Width/2, 30, f14, xui.Color_Gray, "CENTER")
+'	
+'	fich = LatLongSl.SubString2(0, LatLongSl.IndexOf("L"))
+'	Can.DrawText(LatLongSl, PanelMain.Width/2, 55, f10, xui.Color_Gray, "CENTER")
+'		
+	
+	fich = fentrada.SubString2(0, fentrada.IndexOf("."))
+	fich = fich & "   " & Hora
+	Can.DrawText(fich,PanelMain.Width/2, 20, f10, xui.Color_Gray, "CENTER")
+	Can.DrawText(Lati, 10, 50, f10, xui.Color_Gray, "LEFT")
+	Can.DrawText(Longi, 10, 80, f10, xui.Color_Gray, "LEFT")
+'	Can.DrawText(HoraSl ,PanelMain.Width -60, 40, f10, xui.Color_Gray, "CENTER")
+	Can.DrawText(HoraSl ,10, 110, f10, xui.Color_Gray, "LEFT")
+	
+	
+	
+	
+'	
+'	Can.DrawText("S",PanelMain.Width -60, PanelMain.Height-100, f14, xui.Color_Gray, "CENTER")
+'	Can.DrawText("N",PanelMain.Width -60, PanelMain.Height-160, f14, xui.Color_Gray, "CENTER")
+'	Can.DrawText("W",PanelMain.Width -90, PanelMain.Height-130, f14, xui.Color_Gray, "CENTER")
+'	Can.DrawText("E",PanelMain.Width -30, PanelMain.Height-130, f14, xui.Color_Gray, "CENTER")
+	Can.DrawText("N",PanelMain.Width -80,  120, f14, xui.Color_Gray, "CENTER")
+	Can.DrawText("S",PanelMain.Width -80, 180, f14, xui.Color_Gray, "CENTER")
+	Can.DrawText("W",PanelMain.Width -110, 150, f14, xui.Color_Gray, "CENTER")
+	Can.DrawText("E",PanelMain.Width -50, 150, f14, xui.Color_Gray, "CENTER")
+
+
+'	Can.DrawText("TESS", 40, PanelMain.Height-130, f14, xui.Color_Gray,"LEFT")
+'	fich = "TIR:" & Round2(TempIRmin,1) & " "& "Tsen:" & Round2( TempAmb,1)
+'	Can.DrawText(fich, 20, PanelMain.Height-80, f10, xui.Color_Gray, "LEFT")
+	
+'	Can.DrawText("TESS P",PanelMain.Width -70, PanelMain.Height-80, f14, xui.Color_Gray, "CENTER")
+	fich = "Range: " & Round2(Brillomin, 1) & "  " & Round2( Brillomax,1)
+	If CBcolor.Checked = False Then
+		Can.DrawText(fich, PanelMain.Width -114, PanelMain.Height-70, f12, xui.Color_Gray, "CENTER")
+	Else
+		Can.DrawText(fich, PanelMain.Width -114, PanelMain.Height-70, f12, xui.Color_ARGB(250,mR(20),mG(20),mB(20) ), "CENTER")
+	End If	
+	Can.DrawText("TESS P",PanelMain.Width -70, PanelMain.Height-110, f14, xui.Color_Gray, "CENTER")
+
+	fich = "T IR: " & Round2(TempIRmin,1) & " ºC"
+	Can.DrawText(fich, 20, PanelMain.Height-95, f10, xui.Color_Gray, "LEFT")
+	fich = "T sen: " & Round2( TempAmb,1) & " ºC"
+	Can.DrawText(fich, 20, PanelMain.Height-65, f10, xui.Color_Gray, "LEFT")
+
+	
+	grafica = Can
+	Can.Invalidate
+	Can.Release
+	
+	Savebmpcsv
+	
+End Sub
+
+
+Private Sub PreparaSectores145
+'	Dim Can As B4XCanvas
+'	Can.Initialize(PanelMain)
+	PanelMain.RemoveAllViews ' para poder refrescar el grafico
+'	Dim f12 As B4XFont = xui.CreateDefaultFont(10)
+	Dim f10 As B4XFont = xui.CreateDefaultFont(8)
+	Dim f12 As B4XFont = xui.CreateDefaultFont(10)
+	Dim f14 As B4XFont = xui.CreateDefaultFont(12)
+	Private fich As String
+	Dim R As B4XRect
+	Dim fila As Int
+	Dim rota As Float
+	
+	rota = 90
+
+	Can.Initialize(PanelMain)	
+	R.Initialize(0,0,PanelMain.Width,PanelMain.Height)
+	Can.DrawRect(R,xui.Color_Black,True,1dip)
+'	Can.DrawRect(R,xui.Color_Darkgray,True,1dip)
+
+	
+	Brillomax = MVmax
+	Brillomin = MVmin
+
+	For naz = 1 To 32
+		fila = naz
+		'draw_sector(64,  naz*11.25 ,   10+(naz/3), 250, 250, Can, 11) 'giro en sentido horario
+		draw_sector(64,  naz*11.25  -(rota+11.25+11.25/2),   MagAS(fila), PanelMain.Width/2,PanelMain.Height/2, Can, 11,8) 'giro en sentido horario
+	Next
+	For naz = 1 To 28
+		fila = fila +1
+		draw_sector(56,  naz*12.86  -(rota+12.86+12.86/2),   MagAS(fila), PanelMain.Width/2,PanelMain.Height/2,Can, 12,8) 'giro en sentido horario
+	Next
+	For naz = 1 To 24
+		fila = fila +1
+		draw_sector(48,  naz*15  -(rota+15+15/2),   MagAS(fila),PanelMain.Width/2,PanelMain.Height/2,Can, 15,8) 'giro en sentido horario
+	Next
+	For naz = 1 To 20
+		fila = fila +1
+		draw_sector(40,  naz*18  -(rota+18+18/2),   MagAS(fila), PanelMain.Width/2,PanelMain.Height/2, Can, 18,8) 'giro en sentido horario
+	Next
+	For naz = 1 To 16
+		fila = fila +1
+		draw_sector(32,  naz*22.5  -(rota+22.5+22.5/2),  MagAS(fila), PanelMain.Width/2,PanelMain.Height/2, Can, 22,8) 'giro en sentido horario
+	Next
+	For naz = 1 To 12
+		fila = fila +1
+		draw_sector(24,  naz*30  -(rota+30+30/2),   MagAS(fila), PanelMain.Width/2,PanelMain.Height/2, Can, 30,8) 'giro en sentido horario
+	Next
+	For naz = 1 To 8
+		fila = fila +1
+		draw_sector(16,  naz*45 -(rota+45+45/2) ,   MagAS(fila), PanelMain.Width/2,PanelMain.Height/2, Can, 45,8) 'giro en sentido horario
+	Next
+	For naz = 1 To 4
+		fila = fila +1
+		draw_sector(8,  naz*90  -(rota+90+90/2),   MagAS(fila), PanelMain.Width/2,PanelMain.Height/2,Can, 90,8) 'giro en sentido horario
+	Next
+	
+	fila = fila +1
+		draw_sector(0,  0 ,   MagAS(fila), PanelMain.Width/2,PanelMain.Height/2,Can,360,8) 'giro en sentido horario
+
+'	For pp = 0 To 240
+'		'Can.DrawLine(pp*2+20, 5,   pp*2+20, 5,   xui.Color_ARGB(200, pp, pp, pp), 2)
+'		Can.DrawLine(pp*2+20, 5,   pp*2+20, 5,   xui.Color_ARGB(250, pp, pp, pp), 2)
+'	Next
+	
+	fich = fentrada.SubString2(0, fentrada.IndexOf("."))
+'	fich = fich & "  " & LatLongSl
+	Can.DrawText(fich,PanelMain.Width/2, 20, f10, xui.Color_Gray, "CENTER")
+	Can.DrawText(Lati, 10, 50, f10, xui.Color_Gray, "LEFT")
+	Can.DrawText(Longi, 10, 80, f10, xui.Color_Gray, "LEFT")
+'	Can.DrawText(HoraSl ,PanelMain.Width -60, 40, f10, xui.Color_Gray, "CENTER")
+	Can.DrawText(HoraSl ,10, 110, f10, xui.Color_Gray, "LEFT")
+
+	Can.DrawText("N",PanelMain.Width -60, 80, f14, xui.Color_Gray, "CENTER")
+	Can.DrawText("S",PanelMain.Width -60, 140, f14, xui.Color_Gray, "CENTER")
+	Can.DrawText("W",PanelMain.Width -90, 110, f14, xui.Color_Gray, "CENTER")
+	Can.DrawText("E",PanelMain.Width -30, 110, f14, xui.Color_Gray, "CENTER")
+	
+'	Can.DrawText("S",PanelMain.Width -60, PanelMain.Height-100, f14, xui.Color_Gray, "CENTER")
+'	Can.DrawText("N",PanelMain.Width -60, PanelMain.Height-160, f14, xui.Color_Gray, "CENTER")
+'	Can.DrawText("W",PanelMain.Width -90, PanelMain.Height-130, f14, xui.Color_Gray, "CENTER")
+'	Can.DrawText("E",PanelMain.Width -30, PanelMain.Height-130, f14, xui.Color_Gray, "CENTER")
+	
+	'Can.DrawText("TESS", 20, PanelMain.Height-130, f14, xui.Color_Gray,"LEFT")
+	fich = "Range: " & Round2(Brillomin, 1) & "  " & Round2( Brillomax,1)
+	If CBcolor.Checked = False Then
+		Can.DrawText(fich, PanelMain.Width -114, PanelMain.Height-80, f12, xui.Color_Gray, "CENTER")
+	Else	
+		Can.DrawText(fich, PanelMain.Width -114, PanelMain.Height-80, f12, xui.Color_ARGB(250,mR(20),mG(20),mB(20) ), "CENTER")
+	End If
+	Can.DrawText("TESS P",PanelMain.Width -70, PanelMain.Height-110, f14, xui.Color_Gray, "CENTER")
+
+	fich = "T IR: " & Round2(TempIRmin,1) & " ºC"
+	Can.DrawText(fich, 10, PanelMain.Height-110, f10, xui.Color_Gray, "LEFT")	
+	fich = "T sen: " & Round2( TempAmb,1) & " ºC"
+	Can.DrawText(fich, 10, PanelMain.Height-80, f10, xui.Color_Gray, "LEFT")
+
+	
+	grafica = Can
+	Can.Invalidate
+	Can.Release
+	Savebmpcsv
+End Sub
+
+
+
+Sub Savebmpcsv    'guarda un bmp y un csv
+	Private mybm As B4XBitmap
+	Dim Out As OutputStream
+	Private myfn As String
+	If fentrada.Length > 0 Then	
+		myfn = fentrada.SubString2(0, fentrada.IndexOf("."))	
+		'File.Copy(File.DirRootExternal, "sel.txt", File.DirRootExternal, myfn & "_out.csv")	
+		If AS145 = False Then
+				File.Copy(rpcfg.GetSafeDirDefaultExternal(""), "sel.txt", rpcfg.GetSafeDirDefaultExternal(""), myfn & "_out.csv")
+		End If
+
+		mybm = grafica.CreateBitmap
+
+		If CBtir.Checked = False Then
+			Out = File.OpenOutput(rpcfg.GetSafeDirDefaultExternal(""), myfn & colorgrafo & ".png", False)
+		Else
+			Out = File.OpenOutput(rpcfg.GetSafeDirDefaultExternal(""), myfn & colorgrafo & "_IR.png", False)
+		End If
+
+		
+		
+		
+		mybm.WriteToStream(Out, 100, "PNG")
+		Out.Close
+	'	Label5.TextColor = Colors.White
+	'	Label5.Text = myfn & "  OK"
+		File.Delete(rpcfg.GetSafeDirDefaultExternal(""),  "sel.txt")
+	Else
+	'	Label5.TextColor = Colors.Red
+	'	Label5.Text = " Invalid data file."		
+	End If
+End Sub
+
+
+'
+'Sub Bsavegraph_Click
+'	
+'	Savebmpcsv
+'End Sub
+
+Sub ListView1_ItemClick (Position As Int, Value As Object)
+
+
+	FichSel = ListView1.GetItem(Position)	
+	ListView1.Visible = False
+	PanelMain.Visible = True
+	Label5.TextColor = Colors.White
+	Label5.Text = "Selec: " & FichSel
+	
+	If FichSel.IndexOf("_AS") =  6 Then		'Auto Scan
+		AS145 = True
+'		abrirfile145(FichSel)
+'		PreparaSectores145
+		If abrirfile145(FichSel) = False Then
+'			Log ("Fich roto")
+			PanelMain.Visible = False
+'			ListView1.Clear
+			ListView1.Visible = True
+		Else
+			If numrowreal > 138 Then
+				PreparaSectores145
+			Else
+'				Log ("Fich roto")
+				PanelMain.Visible = False
+				ListView1.Visible = True
+					
+			End If	
+		End If			
+	Else If FichSel.IndexOf("TAS") =0 Then  'Lecturas sueltas TAS
+		PanelMain.Visible = False
+		ListView1.Clear
+		ListView1.Visible = True
+'						
+	Else If FichSel.IndexOf("TSP") = 0 Then  ' Fichero TSP con o sin scan
+'		Log("TSP")
+		AS145 = False
+		If abrirfile(FichSel) Then			  'Trata de representar  scan de 45 puntos
+			bz
+'			Log("bz")
+		Else
+			'		Log ("Fich roto")
+			PanelMain.Visible = False
+			ListView1.Clear
+			ListView1.Visible = True
+
+		End If
+				
+	Else
+'		Log("nada "  & FichSel )
+			PanelMain.Visible = False
+			ListView1.Clear
+			ListView1.Visible = True								
+	End If
+	
+	
+	
+
+
+End Sub
+
+'------------'Schaefer, B.E. Feb. 1990. Telescopic Limiting Magnitude.--------------
+Sub MagnitudVisual( mag As Float) As Float        'Im=7.93 - 5 Log(1 + 10(4.316-Ba/5))
+       
+ Private b, v As Float
+	b = Power(10, 4.316-(mag/5))
+   v = 7.93 - 5.0 * Logarithm(1 + b, 10)
+ 	Return(v)
+ End Sub
+
+Sub EditText1_TextChanged (Old As String, New As String)	
+ 	EditText1.TextColor = Colors.Red
+End Sub
+
+
+Sub EditText1_EnterPressed
+'	Starter.Lugar = Elugar.Text
+'	TimBoton.Enabled = True
+	EditText1.TextColor = Colors.RGB(0x7F,0x9D,0xF9) 
+	
+	Dim escrit As Int
+	
+	TimBoton.Enabled = True
+'	comienzo = NameSensor
+	Starter.NameSensor = EditText1.Text
+	If (Starter.NameSensor.Length >3) Then
+	
+		If File.Exists(rpcfg.GetSafeDirDefaultExternal(""), "tsp_cfg.txt") = False Then
+			ToastMessageShow("attachment file not found", False)
+		Else
+			If (File.Delete(rpcfg.GetSafeDirDefaultExternal(""), "tsp_cfg.txt") ) Then
+				Starter.espera = 0
+				Label5.Text = "cfg erased"
+			Else
+				ToastMessageShow("No File found to delete", False)
+			End If
+		End If
+		
+		tsp_cfg.Initialize(rpcfg.GetSafeDirDefaultExternal(""), "tsp_cfg.txt", False)		
+		escrit = tsp_cfg.WriteBytes(Starter.NameSensor.GetBytes("Windows-1252"), 0, Starter.NameSensor.Length, 0)
+						
+		Starter.espera = 0
+		Label5.TextColor = Colors.LightGray
+		Label5.Text = "Selected  " & Starter.NameSensor
+		tsp_cfg.Close
+		
+		If Starter.NameSensor.Contains("TAS") Then
+			BstartTas.Enabled = True
+		Else
+			BstartTas.Enabled = False
+		End If
+
+		Starter.manager.Disconnect
+		Starter.RxByBT = 0
+		Starter.esperapelin = 0
+		
+	End If
+End Sub
+
+
+
+Sub BAlarmaIR_Click
+	Starter.AlarmIR = False
+	If Starter.FlagAlarmIR = False Then
+		Starter.FlagAlarmIR = True
+		BAlarmaIR.Text = "IR ON"
+		BAlarmaIR.TextColor = Colors.Green
+		Starter.RefAlarmIR = Starter.TObj
+		'Label5.Text = "Acustic Alarm for + - 2 ºC"
+		Label5.TextColor = Colors.LightGray
+		Label5.Text = "Acustic Alarm for" & Round2((Starter.TObj - Starter.DeltaIR),2) & " > T IR > " & Round2((Starter.TObj + Starter.DeltaIR),2)
+	
+	Else
+		Starter.FlagAlarmIR = False	
+		BAlarmaIR.Text = "IR OFF"
+		BAlarmaIR.TextColor = Colors.LightGray
+	End If
+End Sub
+
+Sub BAlarmaMV_Click
+	Starter.AlarmMV = False
+	If Starter.FlagAlarmMV = False Then
+		Starter.FlagAlarmMV = True
+		BAlarmaMV.Text = "Ma ON"
+		BAlarmaMV.TextColor = Colors.Green
+		Starter.RefAlarmMV = Starter.Magnitud
+		Label5.TextColor = Colors.LightGray
+		Label5.Text = "Acustic Alarm for:  " & Round2((Starter.Magnitud - Starter.DeltaMag),2) & " > Mag > " & Round2((Starter.Magnitud + Starter.DeltaMag),2)
+	Else
+		Starter.FlagAlarmMV = False
+		BAlarmaMV.Text = "Ma OFF"
+		BAlarmaMV.TextColor = Colors.LightGray
+	End If
+	
+End Sub
+
+
+
+Sub CargaPaletaNixNox
+	mR(0)= 8
+	mR(1)= 17
+	mR(2)= 25
+	mR(3)= 35
+	mR(4)= 34
+	mR(5)= 32
+	mR(6)= 29
+	mR(7)= 41
+	mR(8)= 17
+	mR(9)= 36
+	mR(10)= 32
+	mR(11)= 25
+	mR(12)= 38
+	mR(13)= 29
+	mR(14)= 39
+	mR(15)= 47
+	mR(16)= 54
+	mR(17)= 75
+	mR(18)= 84
+	mR(19)= 108
+	mR(20)= 128
+	mR(21)= 138
+	mR(22)= 148
+'	mR(23)= 201
+	mR(23)= 160
+	mR(24)= 178
+	mR(25)= 202
+	mR(26)= 214
+	mR(27)= 226
+	mR(28)= 237
+	mR(29)= 242
+	mR(30)= 248
+	mR(31)= 251
+	
+	mG(0)= 31
+	mG(1)= 39
+	mG(2)= 46
+	mG(3)= 51
+	mG(4)= 59
+	mG(5)= 67
+	mG(6)= 77
+	mG(7)= 84
+	mG(8)= 94
+	mG(9)= 104
+	mG(10)= 115
+	mG(11)= 126
+	mG(12)= 135
+	mG(13)= 147
+	mG(14)= 155
+	mG(15)= 163
+	mG(16)= 174
+	mG(17)= 184
+	mG(18)= 193
+	mG(19)= 200
+	mG(20)= 204
+	mG(21)= 210
+	mG(22)= 216
+'	mG(23)= 205
+	mG(23)= 220
+	mG(24)= 225
+	mG(25)= 235
+	mG(26)= 239
+	mG(27)= 242
+	mG(28)= 247
+	mG(29)= 251
+	mG(30)= 251
+	mG(31)= 254
+
+	mB(0)= 96
+	mB(1)= 113
+	mB(2)= 131
+	mB(3)= 144
+	mB(4)= 151
+	mB(5)= 159
+	mB(6)= 161
+	mB(7)= 163
+	mB(8)= 170
+	mB(9)= 174
+	mB(10)= 178
+	mB(11)= 182
+	mB(12)= 185
+	mB(13)= 189
+	mB(14)= 191
+	mB(15)= 193
+	mB(16)= 194
+	mB(17)= 195
+	mB(18)= 194
+	mB(19)= 187
+	mB(20)= 186
+	mB(21)= 187
+	mB(22)= 186
+'	mB(23)= 169
+	mB(23)= 182
+	mB(24)= 182
+	mB(25)= 178
+	mB(26)= 178
+	mB(27)= 176
+	mB(28)= 175
+	mB(29)= 186
+	mB(30)= 194
+	mB(31)= 207
+	
+	
+End Sub
+'
+Sub Bscan_Click
+'	Log("btnScan")
+'	Starter.rp.CheckAndRequest(Starter.rp.PERMISSION_ACCESS_COARSE_LOCATION)
+'	Wait For Activity_PermissionResult (Permission As String, Result As Boolean)
+'	If Result = False Then Return
+''	pbScan.Visible = True
+'	CallSub(Starter, "StartScan")
+'
+End Sub
+
+Sub btnDisconnect_Click
+	CallSub(Starter, "Disconnect")
+	Starter.arrancado = False
+'	Starter.esperapelin = 0
+	
+	Starter.EsperaMsg = 0
+End Sub
+
+
+
+Sub btnReadData_Click
+'	pbReadData.Visible = True
+'	clv.Clear
+	CallSub(Starter, "ReadData")
+
+End Sub
+
+Sub BstartTas_Click
+	ToastMessageShow("Long Click for START/STOP", False)
+End Sub
+
+Sub BstartTas_LongClick
+	Dim kk(5) As Byte
+	
+	Starter.SegScan = 0
+	
+	If Starter.NameSensor.Contains("TAS") Then			
+		If Starter.salvandoScan = False Then
+			Log("Start Scan")
+			BstartTas.TextColor = Colors.Gray
+			BstartTas.Enabled = False
+			Starter.bep.Beep
+			kk(0) = 0x53  'S   para Start Scan
+			kk(1) = 0x32
+			kk(2) = 0x33
+			kk(3) = 0x34
+			
+			PanelMain.Visible = False
+			ListView1.Visible = False					
+		Else
+			Starter.bep.Beep
+			Starter.salvandoScan = False
+			Log("stop")
+		
+			kk(0) = 0x54  'T   para Stop Scan
+			kk(1) = 0x32
+			kk(2) = 0x33
+			kk(3) = 0x34
+		End If
+		Starter.Manager.WriteData(Starter.SERVICE_UUID, Starter.CHARACTERISTIC_UUID_TX, kk)		
+	End If
+End Sub
+
+Sub Button1_LongClick
+	ExitApplication
+End Sub
+
+
+Sub Button1_Click
+	ToastMessageShow("Long Click EXIT app.", False)
+End Sub
