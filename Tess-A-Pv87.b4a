@@ -168,8 +168,8 @@ Sub Process_Globals
 '	Dim mqtt_server_local As String = "192.168.1.33"
 
 '	Dim mqtt_server_local As String = "astrix.fis.ucm.es" 'original
-'	Dim mqtt_user_local As String = "tess"          	'original
-'	Dim mqtt_password_local As String = "k0L1vr1Sl0w" 'original enviar
+'	Dim mqtt_user_local As String = "xxxx"          	'original
+'	Dim mqtt_password_local As String = "xxxxxxxx" 'original enviar
 	Dim mqtt_server_local As String = "test.mosquitto.org"
 	Dim mqtt_user_local As String = ""
 	Dim mqtt_password_local As String = ""
